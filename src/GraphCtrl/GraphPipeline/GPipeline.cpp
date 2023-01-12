@@ -94,9 +94,20 @@ CStatus GPipeline::process(CSize runTimes) {
 
 GPipelinePtr GPipeline::setGElementRunTtl(CMSec ttl) {
     CGRAPH_ASSERT_INIT_RETURN_NULL(false)
+    CGRAPH_ASSERT_NOT_NULL_RETURN_NULL(element_manager_)
+    CGRAPH_ASSERT_NOT_NULL_RETURN_NULL(element_manager_->engine_)
 
     // 在element_manager中区执行信息了，所以ttl放到
-    element_manager_->element_run_ttl_ = ttl;
+    element_manager_->engine_->element_run_ttl_ = ttl;
+    return this;
+}
+
+
+GPipelinePtr GPipeline::setGEngineType(GEngineType type) {
+    CGRAPH_ASSERT_INIT_RETURN_NULL(false)
+    CGRAPH_ASSERT_NOT_NULL_RETURN_NULL(element_manager_)
+
+    element_manager_->setEngineType(type);
     return this;
 }
 

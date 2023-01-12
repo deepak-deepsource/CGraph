@@ -58,12 +58,14 @@ protected:
      * 判断是否所有element均执行结束了
      * @return
      */
-    CBool isElementsDone();
+    CBool isClusterDone();
 
 
     friend class GElementManager;
     friend class GRegion;
     friend class GPipeline;
+    friend class GStaticEngine;
+    friend class GDynamicEngine;
 };
 
 using GClusterPtr = GCluster *;

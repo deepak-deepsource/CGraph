@@ -93,6 +93,36 @@ public:
                              CSize loop = CGRAPH_DEFAULT_LOOP_TIMES);
 
     /**
+     * 注册function类型的内容，模板特化
+     * @tparam GFunction
+     * @tparam level
+     * @param functionRef
+     * @param dependElements
+     * @param name
+     * @param loop
+     * @return
+     */
+    template<typename GFunction, CLevel level = CGRAPH_DEFAULT_ELEMENT_LEVEL>
+    CStatus registerGElement(GFunctionPtr *functionRef,
+                             const GElementPtrSet &dependElements = std::initializer_list<GElementPtr>(),
+                             const std::string &name = CGRAPH_EMPTY,
+                             CSize loop = CGRAPH_DEFAULT_LOOP_TIMES);
+
+    /**
+     * 在图中注册一个模板Element信息
+     * @tparam TNode
+     * @tparam Args
+     * @param elementRef
+     * @param dependElements
+     * @return
+     */
+    template<typename TNode, typename ...Args,
+            std::enable_if_t<std::is_base_of<GTemplateNode<Args ...>, TNode>::value, int> = 0>
+    CStatus registerGElement(GTemplateNodePtr<Args ...> *elementRef,
+                             const GElementPtrSet &dependElements = std::initializer_list<GElementPtr>(),
+                             Args... args);
+
+    /**
      * 添加参数，pipeline中所有节点共享此参数
      * @tparam T
      * @param key
@@ -126,12 +156,31 @@ public:
     GPipeline* addGDaemon(CMSec ms, DParam* param = nullptr);
 
     /**
+     * 添加模板类型守护
+     * @tparam TAspect
+     * @tparam Args
+     * @param ms
+     * @param args
+     * @return
+     */
+    template<typename TDaemon, typename ...Args,
+            std::enable_if_t<std::is_base_of<GTemplateDaemon<Args...>, TDaemon>::value, int> = 0>
+    GPipeline* addGDaemon(CMSec ms, Args... args);
+
+    /**
      * 设置执行的最大时间周期，单位为毫秒
      * @param ttl
      * @return
      * @notice beta接口
      */
     GPipeline* setGElementRunTtl(CMSec ttl);
+
+    /**
+     * 设置引擎策略
+     * @param type
+     * @return
+     */
+    GPipeline* setGEngineType(GEngineType type);
 
 protected:
     explicit GPipeline();

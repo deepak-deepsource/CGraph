@@ -22,9 +22,9 @@ CStatus GParamManager::create(const std::string& key) {
         return (typeid(*param).name() == typeid(T).name()) ? CStatus() : CStatus("create param duplicate");
     }
 
-    T* ptr = CGRAPH_SAFE_MALLOC_COBJECT(T)
     {
         CGRAPH_LOCK_GUARD lock(this->lock_);
+        T* ptr = CGRAPH_SAFE_MALLOC_COBJECT(T)
         params_map_.insert(std::pair<std::string, T*>(key, ptr));
     }
 
@@ -41,6 +41,16 @@ T* GParamManager::get(const std::string& key) {
     }
 
     return dynamic_cast<T *>(result->second);
+}
+
+
+template<typename T, std::enable_if_t<std::is_base_of<GParam, T>::value, int>>
+T* GParamManager::getWithNoEmpty(const std::string& key) {
+    auto* param = get<T>(key);
+    if (nullptr == param) {
+        CGRAPH_THROW_EXCEPTION("param [" + key + "] is null")
+    }
+    return param;
 }
 
 CGRAPH_NAMESPACE_END

@@ -11,7 +11,7 @@
 
 using namespace CGraph;
 
-void tutorial_complex () {
+void tutorial_complex() {
     CStatus status;
     GPipelinePtr pipeline = GPipelineFactory::create();
     GElementPtr a, b_cluster, c, d_region, e = nullptr;
@@ -42,6 +42,7 @@ void tutorial_complex () {
     status = pipeline->process();
     GPipelineFactory::remove(pipeline);
 }
+
 
 int main () {
     tutorial_complex();

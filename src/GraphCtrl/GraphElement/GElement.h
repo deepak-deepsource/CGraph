@@ -16,13 +16,13 @@
 #include <algorithm>
 
 #include "GElementDefine.h"
-#include "../GraphObject.h"
+#include "GElementObject.h"
 #include "../GraphParam/GParamInclude.h"
 #include "../GraphAspect/GAspectInclude.h"
 
 CGRAPH_NAMESPACE_BEGIN
 
-class GElement : public GraphObject {
+class GElement : public GElementObject {
 public:
     /**
      * 获取name信息
@@ -45,6 +45,16 @@ public:
     T* getGParam(const std::string& key);
 
     /**
+     * 获取参数信息，如果未找到，则返回nullptr
+     * @tparam T
+     * @param key
+     * @return
+     */
+    template<typename T,
+            std::enable_if_t<std::is_base_of<GParam, T>::value, int> = 0>
+    T* getGParamWithNoEmpty(const std::string& key);
+
+    /**
      * 创建param信息，如果创建成功，则直接返回ok
      * @tparam T
      * @param key
@@ -65,6 +75,16 @@ public:
             std::enable_if_t<std::is_base_of<GAspect, TAspect>::value, int> = 0,
             std::enable_if_t<std::is_base_of<GAspectParam, TParam>::value, int> = 0>
     GElement* addGAspect(TParam* param = nullptr);
+
+    /**
+     * 实现添加模板切面的逻辑
+     * @tparam TAspect
+     * @tparam Args
+     * @return
+     */
+    template<typename TAspect, typename ...Args,
+            std::enable_if_t<std::is_base_of<GTemplateAspect<Args...>, TAspect>::value, int> = 0>
+    GElement* addGAspect(Args... args);
 
     /**
      * 添加当前element内部参数
@@ -97,6 +117,14 @@ public:
      * @return
      */
     GElement* setLoop(CSize loop);
+
+    /**
+     * 设置level信息，用于控制init和destroy方法的执行顺序
+     * level值越低，函数越先执行
+     * @param level
+     * @return
+     */
+    GElement* setLevel(CLevel level);
 
 protected:
     /**
@@ -191,19 +219,18 @@ protected:
     T* getEParam(const std::string& key);
 
     /**
-     * 设置level信息，用于控制init和destroy方法的执行顺序
-     * level值越低，函数越先执行
-     * @param level
-     * @return
-     */
-    GElement* setLevel(CLevel level);
-
-    /**
      * 包含切面相关功能的函数，fat取自fatjar的意思
      * @param type
      * @return
      */
     CStatus fatProcessor(const CFunctionType& type);
+
+    /**
+     * 获取执行线程对应的信息
+     * @return
+     * @notice 辅助线程返回-1
+     */
+    int getThreadNum();
 
     CGRAPH_NO_ALLOWED_COPY(GElement);
 
@@ -221,7 +248,7 @@ protected:
     GParamManagerPtr param_manager_ { nullptr };     // 整体流程的参数管理类，所有pipeline中的所有节点共享
     GAspectManagerPtr aspect_manager_ { nullptr };   // 整体流程的切面管理类
     UThreadPoolPtr thread_pool_ { nullptr };         // 用于执行的线程池信息
-    GElementParamKV local_params_;                   // 用于记录当前element的内部参数
+    GElementParamMap local_params_;                  // 用于记录当前element的内部参数
 
     friend class GNode;
     friend class GCluster;
@@ -231,6 +258,8 @@ protected:
     friend class GGroup;
     friend class GPipeline;
     friend class GElementSorter;
+    friend class GStaticEngine;
+    friend class GDynamicEngine;
     template<typename T> friend class GSingleton;
 };
 
